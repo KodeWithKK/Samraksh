@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "samraksh"
+version = "0.1.0"
+description = ""
+authors = ["KodeWithKK <kodewithkk@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.115.0"
+uvicorn = {extras = ["standard"], version = "^0.31.1"}
+python-multipart = "^0.0.12"
+cvzone = "^1.6.1"
+ultralytics = "^8.3.10"
+lapx = "^0.5.11"
+opencv-python = "^4.10.0.84"
+opencv-python-headless = "^4.10.0.84"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
