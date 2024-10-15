@@ -2,28 +2,24 @@
 
 ## Backend
 
-- Install python 3.12.5
+- Install Docker
 
-- Open backend directory on terminal and run following commands
+- Build Image (Don't run for subsequent use)
 
-  ```bash
-  python -m venv .venv
+  ```shell
+  docker-compose build
   ```
 
-  ```bash
-  pip install poetry
+- For Running
+
+  ```shell
+  docker-compose up -d
   ```
 
-  ```bash
-  poetry shell
-  ```
+- For Stopping
 
-  ```bash
-  poetry install
-  ```
-
-  ```bash
-  python main.py
+  ```shell
+  docker-compose down
   ```
 
 ## Frontend

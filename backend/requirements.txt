@@ -1,0 +1,7 @@
+fastapi[standard]
+uvicorn[standard]
+python-multipart
+opencv-python-headless
+cvzone
+ultralytics
+lapx

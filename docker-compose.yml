@@ -1,0 +1,13 @@
+version: "3.9"
+
+services:
+  backend:
+    build: ./backend
+    container_name: samraksh-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/server/assets:/app/server/assets
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped

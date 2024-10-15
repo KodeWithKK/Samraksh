@@ -1,17 +1,31 @@
 import time
 
 import cv2
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from fastapi.responses import StreamingResponse
 from server.detectors.person_body import detect_person_body
+from server.detectors.weapon import detect_weapon
 
 router = APIRouter()
 
+default_video_map = {
+    "person_detection": "/person/test.mp4",
+    "weapon_detection": "/weapon/test4.mp4",
+}
+
 
 # Function to generate video frames
-def generate_frames():
-    # cap = cv2.VideoCapture(0)
-    cap = cv2.VideoCapture("./server/assets/videos/test2.mp4")
+def generate_frames(active_model: str, use_webcam: bool):
+    if use_webcam:
+        cap = cv2.VideoCapture(0)
+    elif active_model in ["person_detection", "weapon_detection"]:
+        cap = cv2.VideoCapture(
+            f"./server/assets/videos{default_video_map[active_model]}"
+        )
+    else:
+        cap = cv2.VideoCapture(
+            f"./server/assets/videos{default_video_map["person_detection"]}"
+        )
 
     fps = cap.get(cv2.CAP_PROP_FPS)
     if fps == 0:
@@ -27,7 +41,11 @@ def generate_frames():
             break
 
         # Process frame
-        detect_person_body(frame)
+        if active_model == "person_detection":
+            detect_person_body(frame)
+
+        if active_model == "weapon_detection":
+            detect_weapon(frame)
 
         # Encode frame in JPEG format
         _, buffer = cv2.imencode(".jpg", frame)
@@ -44,7 +62,13 @@ def generate_frames():
 
 
 @router.get("/stream-video")
-def video_feed():
+def video_feed(
+    active_model: str = Query(
+        "person_detection", description="[person_detection / weapon_detection]"
+    ),
+    use_webcam: bool = Query(False, description="[true / false]"),
+):
     return StreamingResponse(
-        generate_frames(), media_type="multipart/x-mixed-replace; boundary=frame"
+        generate_frames(active_model, use_webcam),
+        media_type="multipart/x-mixed-replace; boundary=frame",
     )
