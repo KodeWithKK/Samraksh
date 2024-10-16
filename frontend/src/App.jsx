@@ -1,13 +1,13 @@
-import AppContextProvider from "./context/app-context-provider";
+import AppProvider from "./context/app-provider";
 import VideoStreamPage from "./page/video-stream";
 
 function App() {
   return (
-    <AppContextProvider>
+    <AppProvider>
       <div className="p-6">
         <VideoStreamPage />
       </div>
-    </AppContextProvider>
+    </AppProvider>
   );
 }
 

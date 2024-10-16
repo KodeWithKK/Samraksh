@@ -1,31 +1,37 @@
+import os
 import time
 
 import cv2
+from dotenv import load_dotenv
 from fastapi import APIRouter, Query
 from fastapi.responses import StreamingResponse
 from server.detectors.person_body import detect_person_body
 from server.detectors.weapon import detect_weapon
 
+load_dotenv()
 router = APIRouter()
 
+VIDEOS_PATH = os.getenv("VIDEOS_PATH")
+
 default_video_map = {
-    "person_detection": "/person/test.mp4",
-    "weapon_detection": "/weapon/test4.mp4",
+    "crowd_detection": "person/test.mp4",
+    "weapon_detection": "weapon/test4.mp4",
 }
 
 
 # Function to generate video frames
-def generate_frames(active_model: str, use_webcam: bool):
+def generate_frames(active_model: str, use_webcam: bool, upload_file_idx: int):
+    all_upload_files = sorted(os.listdir(f"{VIDEOS_PATH}/custom"))
+
     if use_webcam:
         cap = cv2.VideoCapture(0)
-    elif active_model in ["person_detection", "weapon_detection"]:
-        cap = cv2.VideoCapture(
-            f"./server/assets/videos{default_video_map[active_model]}"
-        )
+    elif upload_file_idx != -1 and upload_file_idx < len(all_upload_files):
+        file_name = all_upload_files[upload_file_idx]
+        cap = cv2.VideoCapture(f"{VIDEOS_PATH}/custom/{file_name}")
+    elif active_model in ["crowd_detection", "weapon_detection"]:
+        cap = cv2.VideoCapture(f"{VIDEOS_PATH}/{default_video_map[active_model]}")
     else:
-        cap = cv2.VideoCapture(
-            f"./server/assets/videos{default_video_map["person_detection"]}"
-        )
+        cap = cv2.VideoCapture(f"{VIDEOS_PATH}/{default_video_map["crowd_detection"]}")
 
     fps = cap.get(cv2.CAP_PROP_FPS)
     if fps == 0:
@@ -41,7 +47,7 @@ def generate_frames(active_model: str, use_webcam: bool):
             break
 
         # Process frame
-        if active_model == "person_detection":
+        if active_model == "crowd_detection":
             detect_person_body(frame)
 
         if active_model == "weapon_detection":
@@ -64,11 +70,12 @@ def generate_frames(active_model: str, use_webcam: bool):
 @router.get("/stream-video")
 def video_feed(
     active_model: str = Query(
-        "person_detection", description="[person_detection / weapon_detection]"
+        "crowd_detection", description="[crowd_detection / weapon_detection]"
     ),
     use_webcam: bool = Query(False, description="[true / false]"),
+    upload_file_idx: int = Query(-1, description="[index of custom video path]"),
 ):
     return StreamingResponse(
-        generate_frames(active_model, use_webcam),
+        generate_frames(active_model, use_webcam, upload_file_idx),
         media_type="multipart/x-mixed-replace; boundary=frame",
     )

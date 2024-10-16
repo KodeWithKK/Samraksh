@@ -10,8 +10,9 @@ import {
 const AppContext = createContext();
 export const useAppContext = () => useContext(AppContext);
 
-function AppContextProvider({ children }) {
+function AppProvider({ children }) {
   const [streamData, setStreamData] = useState();
+  const [customUploadFileList, setCustomUploadFileList] = useState([]);
 
   const connectWebSocket = useCallback(() => {
     const ws = new WebSocket("ws://localhost:8000/ws");
@@ -29,23 +30,36 @@ function AppContextProvider({ children }) {
         connectWebSocket();
       }, 1000);
     };
-
     return ws;
+  }, []);
+
+  const fetchCustomUploadFileList = useCallback(async () => {
+    await fetch("http://localhost:8000/list-uploaded-videos")
+      .then((res) => res.json())
+      .then((data) => {
+        setCustomUploadFileList(data?.data);
+      })
+      .catch(() =>
+        console.log("Something went wrong while uploaded list videos"),
+      );
   }, []);
 
   useEffect(() => {
     const ws = connectWebSocket();
+    fetchCustomUploadFileList();
     return () => ws && ws.close();
-  }, [connectWebSocket]);
+  }, [connectWebSocket, fetchCustomUploadFileList]);
 
   const value = useMemo(
     () => ({
       streamData,
+      customUploadFileList,
+      fetchCustomUploadFileList,
     }),
-    [streamData],
+    [streamData, customUploadFileList, fetchCustomUploadFileList],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
 
-export default AppContextProvider;
+export default AppProvider;

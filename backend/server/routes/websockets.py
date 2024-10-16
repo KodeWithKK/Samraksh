@@ -1,10 +1,9 @@
 import asyncio
 
-from fastapi import APIRouter, FastAPI, WebSocket
+from fastapi import APIRouter, WebSocket
 from server.data.detection_meta import detection_meta
 from starlette.websockets import WebSocketDisconnect
 
-app = FastAPI()
 router = APIRouter()
 
 
@@ -22,6 +21,3 @@ async def send_person_count(websocket: WebSocket):
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await send_person_count(websocket)
-
-
-app.include_router(router)
